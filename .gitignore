@@ -21,9 +21,7 @@ package-lock.json
 /dist
 /build
 
-# Ignorar arquivos de dependências compiladas
-*.js
-*.d.ts
+
 
 # Ignorar arquivos de configuração local
 config/config.local.js
