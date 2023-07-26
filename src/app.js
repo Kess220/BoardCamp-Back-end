@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { db } from "./config/dbConfig.js";
 import routes from "./routes/routes.js";
 import gamesRoutes from "./routes/games.routes.js";
+import clientsRoutes from "./routes/clients.routes.js";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/api", routes);
 app.use("/games", gamesRoutes);
+app.use("/customers", clientsRoutes);
 
 db.connect((err, client, done) => {
   if (err) {

@@ -25,3 +25,5 @@ package-lock.json
 
 # Ignorar arquivos de configuração local
 config/config.local.js
+
+.gitignore
