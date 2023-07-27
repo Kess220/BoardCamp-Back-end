@@ -109,13 +109,6 @@ export const returnRental = async (req, res) => {
       return res.status(400).json({ message: "Aluguel já finalizado" });
     }
 
-    // Calcular a delayFee (taxa de atraso) se houver atraso na devolução
-    const returnDateObj = new Date(returnDate);
-    const rentDateObj = new Date(rental.rentdate);
-    const daysDifference = Math.floor(
-      (returnDateObj - rentDateObj) / (1000 * 60 * 60 * 24)
-    );
-
     // Obter o gameId do aluguel para buscar o preço por dia na tabela games
     const gameId = rental.gameid;
     const gameQuery = "SELECT pricePerDay FROM games WHERE id = $1";
@@ -126,13 +119,23 @@ export const returnRental = async (req, res) => {
     const pricePerDayString = gameResult.rows[0].priceperday;
     const pricePerDay = parseFloat(pricePerDayString); // Converter para número (float)
 
-    // Verificar se o preço por dia é válido
     if (isNaN(pricePerDay)) {
       return res.status(500).json({ message: "Preço por dia inválido" });
     }
 
-    const delayFee =
-      Math.max(0, daysDifference - rental.daysrented) * pricePerDay;
+    // Calcular a delayFee (taxa de atraso) se houver atraso na devolução
+    const returnDateObj = new Date(returnDate);
+    const rentDateObj = new Date(rental.rentdate);
+    const daysDifference = Math.floor(
+      (returnDateObj - rentDateObj) / (1000 * 60 * 60 * 24)
+    );
+
+    // Verificar se houve atraso na devolução e calcular a taxa de atraso (delayFee)
+    let delayFee = 0;
+    if (daysDifference > rental.daysrented) {
+      const daysDelayed = daysDifference - rental.daysrented;
+      delayFee = daysDelayed * pricePerDay;
+    }
 
     // Atualizar os campos returnDate e delayFee na tabela rentals
     const updateQuery =
