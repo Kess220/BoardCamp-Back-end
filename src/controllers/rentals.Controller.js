@@ -2,8 +2,49 @@ import { db } from "../config/dbConfig.js";
 
 export const listRentals = async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM rentals");
-    res.status(200).json(result.rows);
+    const query = `
+      SELECT
+        r.id,
+        r."customerId",
+        r."gameId",
+        TO_CHAR(r."rentDate", 'YYYY-MM-DD') AS "rentDate",
+        r."daysRented",
+        TO_CHAR(r."returnDate", 'YYYY-MM-DD') AS "returnDate",
+        r."originalPrice",
+        r."delayFee",
+        c.id AS "customer.id",
+        c.name AS "customer.name",
+        g.id AS "game.id",
+        g.name AS "game.name"
+      FROM
+        rentals r
+      LEFT JOIN
+        customers c ON r."customerId" = c.id
+      LEFT JOIN
+        games g ON r."gameId" = g.id
+    `;
+
+    const result = await db.query(query);
+    const rentals = result.rows.map((row) => ({
+      id: row.id,
+      customerId: row.customerId,
+      gameId: row.gameId,
+      rentDate: row.rentDate,
+      daysRented: row.daysRented,
+      returnDate: row.returnDate,
+      originalPrice: row.originalPrice,
+      delayFee: row.delayFee,
+      customer: {
+        id: row["customer.id"],
+        name: row["customer.name"],
+      },
+      game: {
+        id: row["game.id"],
+        name: row["game.name"],
+      },
+    }));
+
+    res.status(200).json(rentals);
   } catch (err) {
     console.error("Erro ao listar aluguéis", err);
     res.status(500).json({ message: "Erro ao listar aluguéis" });
