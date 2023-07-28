@@ -39,17 +39,16 @@ export const insertRental = async (req, res) => {
       return res.status(400).json({ message: "Jogo não encontrado" });
     }
 
-    const rentalQuery =
-      'SELECT COUNT(*) FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL';
-    const rentalResult = await db.query(rentalQuery, [gameId]);
-    const rentedGames = rentalResult.rows[0].COUNT;
-
     const gameStockQuery = 'SELECT "stockTotal" FROM games WHERE "id" = $1';
     const gameStockResult = await db.query(gameStockQuery, [gameId]);
     const gameStockTotal = gameStockResult.rows[0].stockTotal;
 
-    // Corrigindo a lógica para verificar se há disponibilidade no estoque
-    if (rentedGames >= gameStockTotal || gameStockTotal <= 0) {
+    const activeRentalsQuery =
+      'SELECT COUNT(*) FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL';
+    const activeRentalsResult = await db.query(activeRentalsQuery, [gameId]);
+    const activeRentalsCount = activeRentalsResult.rows[0].count;
+
+    if (activeRentalsCount >= gameStockTotal) {
       return res
         .status(400)
         .json({ message: "Não há jogos disponíveis para aluguel" });
@@ -77,10 +76,6 @@ export const insertRental = async (req, res) => {
       daysRented,
       originalPrice,
     ]);
-
-    const updateStockQuery =
-      'UPDATE games SET "stockTotal" = "stockTotal" - 1 WHERE "id" = $1';
-    await db.query(updateStockQuery, [gameId]);
 
     return res.status(201).json();
   } catch (err) {
@@ -133,10 +128,6 @@ export const returnRental = async (req, res) => {
       'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE "id" = $3';
 
     await db.query(updateQuery, [returnDate, delayFee, id]);
-
-    const releaseGameQuery =
-      'UPDATE games SET "stockTotal" = "stockTotal" + 1 WHERE "id" = $1';
-    await db.query(releaseGameQuery, [gameId]);
 
     return res.status(200).json();
   } catch (err) {
