@@ -1,7 +1,6 @@
 import { db } from "../config/dbConfig.js";
 
-// Listar os games
-
+// Listar os jogos
 export const listGames = async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM games;");
@@ -12,8 +11,7 @@ export const listGames = async (req, res) => {
   }
 };
 
-// Inserir os games
-
+// Inserir um jogo
 export const insertGame = async (req, res) => {
   const { name, image, stockTotal, pricePerDay } = req.body;
 
@@ -38,7 +36,7 @@ export const insertGame = async (req, res) => {
     }
 
     await db.query(
-      "INSERT INTO games (name, image, stockTotal, pricePerDay) VALUES ($1, $2, $3, $4)",
+      'INSERT INTO games (name, image, "stockTotal", "pricePerDay") VALUES ($1, $2, $3, $4)',
       [name, image, stockTotal, pricePerDay]
     );
 
