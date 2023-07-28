@@ -180,3 +180,30 @@ export const returnRental = async (req, res) => {
     res.status(500).json({ message: "Erro ao retornar aluguel" });
   }
 };
+
+export const deleteRental = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const rentalQuery = 'SELECT * FROM rentals WHERE "id" = $1';
+    const rentalResult = await db.query(rentalQuery, [id]);
+
+    if (rentalResult.rowCount === 0) {
+      return res.status(404).json({ message: "Aluguel não encontrado" });
+    }
+
+    const rental = rentalResult.rows[0];
+
+    if (rental.returnDate !== null) {
+      return res.status(400).json({ message: "Aluguel já finalizado" });
+    }
+
+    const deleteQuery = 'DELETE FROM rentals WHERE "id" = $1';
+    await db.query(deleteQuery, [id]);
+
+    return res.status(200).json();
+  } catch (err) {
+    console.error("Erro ao excluir aluguel", err);
+    res.status(500).json({ message: "Erro ao excluir aluguel" });
+  }
+};
