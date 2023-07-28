@@ -93,7 +93,7 @@ export const insertRental = async (req, res) => {
 
 export const returnRental = async (req, res) => {
   const { id } = req.params;
-  const returnDate = new Date().toISOString().split("T")[0];
+  const returnDate = new Date(req.body.returnDate).toISOString().split("T")[0];
 
   try {
     // Verificar se o id do aluguel fornecido existe
@@ -111,7 +111,7 @@ export const returnRental = async (req, res) => {
 
     // Obter o gameId do aluguel para buscar o preço por dia na tabela games
     const gameId = rental.gameid;
-    const gameQuery = "SELECT pricePerDay FROM games WHERE id = $1";
+    const gameQuery = "SELECT priceperday FROM games WHERE id = $1";
     const gameResult = await db.query(gameQuery, [gameId]);
     if (gameResult.rowCount === 0) {
       return res.status(500).json({ message: "Preço por dia inválido" });
@@ -134,10 +134,10 @@ export const returnRental = async (req, res) => {
     let delayFee = 0;
     if (daysDifference > rental.daysrented) {
       const daysDelayed = daysDifference - rental.daysrented;
-      delayFee = daysDelayed * pricePerDay;
+      delayFee = daysDelayed * pricePerDay; // Removendo a multiplicação por 100
     }
 
-    // Atualizar os campos returnDate e delayFee na tabela rentals
+    // Atualizar os campos returndate e delayfee na tabela rentals
     const updateQuery =
       "UPDATE rentals SET returndate = $1, delayfee = $2 WHERE id = $3";
     await db.query(updateQuery, [returnDate, delayFee, id]);
