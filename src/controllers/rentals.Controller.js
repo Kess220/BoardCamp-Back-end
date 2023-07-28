@@ -44,9 +44,11 @@ export const insertRental = async (req, res) => {
       'SELECT COUNT(*) FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL';
     const rentalResult = await db.query(rentalQuery, [gameId]);
     const rentedGames = rentalResult.rows[0].COUNT;
+
     const gameStockQuery = 'SELECT "stockTotal" FROM games WHERE "id" = $1';
     const gameStockResult = await db.query(gameStockQuery, [gameId]);
     const gameStockTotal = gameStockResult.rows[0].stockTotal;
+
     if (rentedGames >= gameStockTotal) {
       return res
         .status(400)
