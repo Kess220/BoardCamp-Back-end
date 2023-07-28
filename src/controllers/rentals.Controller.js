@@ -48,6 +48,7 @@ export const insertRental = async (req, res) => {
     const gameStockResult = await db.query(gameStockQuery, [gameId]);
     const gameStockTotal = gameStockResult.rows[0].stockTotal;
 
+    // Corrigindo a lógica para verificar se há disponibilidade no estoque
     if (rentedGames >= gameStockTotal || gameStockTotal <= 0) {
       return res
         .status(400)
