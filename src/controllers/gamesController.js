@@ -38,7 +38,7 @@ export const insertGame = async (req, res) => {
     }
 
     await db.query(
-      "INSERT INTO games (name, image, stocktotal, priceperday) VALUES ($1, $2, $3, $4)",
+      "INSERT INTO games (name, image, stockTotal, pricePerDay) VALUES ($1, $2, $3, $4)",
       [name, image, stockTotal, pricePerDay]
     );
 
