@@ -2,8 +2,12 @@ import { db } from "../config/dbConfig.js";
 
 export const listClients = async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM customers ");
-    res.status(200).json(result.rows);
+    const result = await db.query("SELECT * FROM customers");
+    const clients = result.rows.map((client) => ({
+      ...client,
+      birthday: new Date(client.birthday).toISOString().split("T")[0],
+    }));
+    res.status(200).json(clients);
   } catch (err) {
     console.log("Erro ao listar clientes", err);
     res.status(500).json({ message: "Erro ao listar clientes" });
@@ -23,6 +27,7 @@ export const getClientById = async (req, res) => {
     }
 
     const client = result.rows[0];
+    client.birthday = new Date(client.birthday).toISOString().split("T")[0];
     res.status(200).json(client);
   } catch (err) {
     console.log("Erro ao buscar cliente pelo ID", err);
