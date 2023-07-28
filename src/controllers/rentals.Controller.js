@@ -1,3 +1,4 @@
+// Arquivo: rentals.controller.js
 import { db } from "../config/dbConfig.js";
 
 export const listRentals = async (req, res) => {
@@ -40,24 +41,24 @@ export const insertRental = async (req, res) => {
     }
 
     const rentalQuery =
-      "SELECT COUNT(*) FROM rentals WHERE gameId = $1 AND returnDate IS NULL";
+      'SELECT COUNT(*) FROM rentals WHERE "gameId" = $1 AND "returnDate" IS NULL';
     const rentalResult = await db.query(rentalQuery, [gameId]);
     const rentedGames = rentalResult.rows[0].COUNT;
-    const gameStockQuery = "SELECT stockTotal FROM games WHERE id = $1";
+    const gameStockQuery = 'SELECT "stockTotal" FROM games WHERE "id" = $1';
     const gameStockResult = await db.query(gameStockQuery, [gameId]);
-    const gameStockTotal = gameStockResult.rows[0].STOCKTOTAL;
+    const gameStockTotal = gameStockResult.rows[0].stockTotal;
     if (rentedGames >= gameStockTotal) {
       return res
         .status(400)
         .json({ message: "Não há jogos disponíveis para aluguel" });
     }
 
-    const gamePriceQuery = "SELECT pricePerDay FROM games WHERE id = $1";
+    const gamePriceQuery = 'SELECT "pricePerDay" FROM games WHERE "id" = $1';
     const gamePriceResult = await db.query(gamePriceQuery, [gameId]);
     if (gamePriceResult.rowCount === 0) {
       return res.status(500).json({ message: "Erro ao obter o preço do jogo" });
     }
-    const pricePerDayString = gamePriceResult.rows[0].PRICEPERDAY;
+    const pricePerDayString = gamePriceResult.rows[0].pricePerDay;
     const pricePerDay = parseFloat(pricePerDayString);
     if (isNaN(pricePerDay)) {
       return res.status(500).json({ message: "Erro ao obter o preço do jogo" });
@@ -66,7 +67,7 @@ export const insertRental = async (req, res) => {
     const originalPrice = daysRented * pricePerDay;
 
     const insertQuery =
-      "INSERT INTO rentals (customerId, gameId, rentDate, daysRented, originalPrice) VALUES ($1, $2, $3, $4, $5)";
+      'INSERT INTO rentals ("customerId", "gameId", "rentDate", "daysRented", "originalPrice") VALUES ($1, $2, $3, $4, $5)';
     await db.query(insertQuery, [
       customerId,
       gameId,
@@ -87,7 +88,7 @@ export const returnRental = async (req, res) => {
   const returnDate = new Date(req.body.returnDate).toISOString().split("T")[0];
 
   try {
-    const rentalQuery = "SELECT * FROM rentals WHERE id = $1";
+    const rentalQuery = 'SELECT * FROM rentals WHERE "id" = $1';
     const rentalResult = await db.query(rentalQuery, [id]);
     if (rentalResult.rowCount === 0) {
       return res.status(404).json({ message: "Aluguel não encontrado" });
@@ -99,12 +100,12 @@ export const returnRental = async (req, res) => {
     }
 
     const gameId = rental.gameId;
-    const gameQuery = "SELECT pricePerDay FROM games WHERE id = $1";
+    const gameQuery = 'SELECT "pricePerDay" FROM games WHERE "id" = $1';
     const gameResult = await db.query(gameQuery, [gameId]);
     if (gameResult.rowCount === 0) {
       return res.status(500).json({ message: "Preço por dia inválido" });
     }
-    const pricePerDayString = gameResult.rows[0].PRICEPERDAY;
+    const pricePerDayString = gameResult.rows[0].pricePerDay;
     const pricePerDay = parseFloat(pricePerDayString);
     if (isNaN(pricePerDay)) {
       return res.status(500).json({ message: "Preço por dia inválido" });
@@ -123,7 +124,7 @@ export const returnRental = async (req, res) => {
     }
 
     const updateQuery =
-      "UPDATE rentals SET returnDate = $1, delayFee = $2 WHERE id = $3";
+      'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE "id" = $3';
 
     await db.query(updateQuery, [returnDate, delayFee, id]);
 
