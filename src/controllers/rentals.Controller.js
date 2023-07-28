@@ -185,23 +185,28 @@ export const deleteRental = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Verifica se o aluguel com o ID fornecido existe no banco de dados
     const rentalQuery = 'SELECT * FROM rentals WHERE "id" = $1';
     const rentalResult = await db.query(rentalQuery, [id]);
 
     if (rentalResult.rowCount === 0) {
+      // Se o aluguel não existir, responde com o status 404
       return res.status(404).json({ message: "Aluguel não encontrado" });
     }
 
     const rental = rentalResult.rows[0];
-
-    if (rental.returnDate !== null) {
-      return res.status(400).json({ message: "Aluguel já finalizado" });
+    if (rental.returnDate === null) {
+      // Se o aluguel não estiver finalizado, responde com o status 400
+      return res
+        .status(400)
+        .json({ message: "Aluguel ainda não foi finalizado" });
     }
 
+    // Se o aluguel existir e estiver finalizado, realiza a exclusão
     const deleteQuery = 'DELETE FROM rentals WHERE "id" = $1';
     await db.query(deleteQuery, [id]);
 
-    return res.status(200).json();
+    return res.status(200).json({ message: "Aluguel excluído com sucesso" });
   } catch (err) {
     console.error("Erro ao excluir aluguel", err);
     res.status(500).json({ message: "Erro ao excluir aluguel" });
