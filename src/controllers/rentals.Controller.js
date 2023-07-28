@@ -1,4 +1,5 @@
 import { db } from "../config/dbConfig.js";
+import dayjs from "dayjs";
 
 export const listRentals = async (req, res) => {
   try {
@@ -127,7 +128,6 @@ export const insertRental = async (req, res) => {
 
 export const returnRental = async (req, res) => {
   const { id } = req.params;
-  const returnDate = new Date(req.body.returnDate).toISOString().split("T")[0];
 
   try {
     const rentalQuery = 'SELECT * FROM rentals WHERE "id" = $1';
@@ -153,7 +153,7 @@ export const returnRental = async (req, res) => {
       return res.status(500).json({ message: "Preço por dia inválido" });
     }
 
-    const returnDateObj = new Date(returnDate);
+    const returnDateObj = new Date();
     const rentDateObj = new Date(rental.rentDate);
     const daysDifference = Math.floor(
       (returnDateObj - rentDateObj) / (1000 * 60 * 60 * 24)
@@ -168,7 +168,11 @@ export const returnRental = async (req, res) => {
     const updateQuery =
       'UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE "id" = $3';
 
-    await db.query(updateQuery, [returnDate, delayFee, id]);
+    await db.query(updateQuery, [returnDateObj, delayFee, id]);
+
+    const releaseGameQuery =
+      'UPDATE games SET "stockTotal" = "stockTotal" + 1 WHERE "id" = $1';
+    await db.query(releaseGameQuery, [gameId]);
 
     return res.status(200).json();
   } catch (err) {
